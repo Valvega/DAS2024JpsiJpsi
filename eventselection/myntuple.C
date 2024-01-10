@@ -147,6 +147,20 @@ void myntuple::Loop()
 					// requiring all muons to come from the same vertex
 					&& (*MyFourMuonVtxCL)[myFourMuIdx] >= 0.005     
 					// Here add the selections! 
+					&& (TrigThreeMuonJpsi || TrigThreeMuonJpsi3p5mu2) 
+					// Transverse momentum of each muon
+					&& fabs(rawMup4vect[0].Pt()) >= 2.0
+					&& fabs(rawMup4vect[1].Pt()) >= 2.0 
+					&& fabs(rawMup4vect[2].Pt()) >= 2.0
+					&& fabs(rawMup4vect[3].Pt()) >= 2.0 
+					// Absolute value of the pseudo-rapidity of each muon
+					&& fabs(rawMup4vect[0].Eta()) <= 2.4
+					&& fabs(rawMup4vect[1].Eta()) <= 2.4
+					&& fabs(rawMup4vect[2].Eta()) <= 2.4
+					&& fabs(rawMup4vect[3].Eta()) <= 2.4
+					// Total charge of 4 muons
+					//&& (fitMuCharge[0] + fitMuCharge[1] + fitMuCharge[2] + fitMuCharge[3]) == 0
+
 				) {
 				for (int mypidx = 0; mypidx < 3; mypidx++)  {
 					int muIdxp11, muIdxp12, muIdxp21, muIdxp22;
@@ -154,13 +168,19 @@ void myntuple::Loop()
 
 
 					if(1
-                                                // Here, require the muon pairs to have muons with opposite charges
+							&& (fitMuCharge[0] + fitMuCharge[1] + fitMuCharge[2] + fitMuCharge[3]) == 0 	// Total charge of 4 muons
+                            && (fitMuCharge[muIdxp11] + fitMuCharge[muIdxp12])  == 0 	// Here, require the muon pairs to have muons with opposite charges
+							&& (fitMuCharge[muIdxp21] + fitMuCharge[muIdxp22])  == 0
+							&& (fitMup4vect[muIdxp11] + fitMup4vect[muIdxp12]).M() > 2.95 	//with a mass in the J/psi mass range
+							&& (fitMup4vect[muIdxp11] + fitMup4vect[muIdxp12]).M() < 3.5
+							&& (fitMup4vect[muIdxp21] + fitMup4vect[muIdxp22]).M() > 2.95
+							&& (fitMup4vect[muIdxp21] + fitMup4vect[muIdxp22]).M() < 3.5
 					  )
 					{
 						// Modify the DiMuonMass expression appropriatly. 
 						// Use the fitMup4vect and the muIdxpXY indexes defined above.
-						DiMuonMass1 = 0; 
-						DiMuonMass2 = 0;
+						DiMuonMass1 = (fitMup4vect[muIdxp11] + fitMup4vect[muIdxp12]).M(); 
+						DiMuonMass2 = (fitMup4vect[muIdxp21] + fitMup4vect[muIdxp22]).M();
 						myDiMuon1mass->Fill(DiMuonMass1);
 						myDiMuon2mass->Fill(DiMuonMass2);
 
@@ -168,8 +188,11 @@ void myntuple::Loop()
 								// Here require that each DiMuonMass is in the appropriate mass range [2.95,3.25] GeV
 														   )
 						{
-							// calculate the 4 muon mass:  M(µ1µ2µ3µ4)-M(µ1µ2)-M(µ3µ4)+2*M(J/psi)  
-							m4Muon = 0;
+						//	m4Muon = 0;
+							m4Muon = (fitMup4vect[muIdxp11] + fitMup4vect[muIdxp12] + fitMup4vect[muIdxp21] + fitMup4vect[muIdxp22]).M() 
+									- (fitMup4vect[muIdxp11] + fitMup4vect[muIdxp12]).M() 
+									- (fitMup4vect[muIdxp21] + fitMup4vect[muIdxp22]).M() 
+									+ 2*JPSI_MASS; // calculate the 4 muon mass:  M(µ1µ2µ3µ4)-M(µ1µ2)-M(µ3µ4)+2*M(J/psi)  
 
 							myFourMuonmass->Fill(m4Muon);
 
